@@ -1,0 +1,222 @@
+
+	PN16C4158969618
+
+Data type Float Ki capacity kam hoti hai hai Data type Double Se
+
+Double Data Type > Float Data Type(Capacity)
+
+C# Loop
+
+WhilelLoop
+
+While loop me pahle "Condition" check hoti hai fir
+"Body" Execute hoti hai.
+
+Do While loop
+
+Do While Loop Me Pahle "Body" Execute Hoti hai Aur
+ "Condition" Last Me Check hoti,"Condition"  k End me semicolon(;) Ayega.
+
+Syntax
+
+Write "do" and press twice on tab(syntax show kar dega).
+
+For loop
+
+ Increament or Decrement hamesha Last Me hota hai.
+
+Sytax
+
+Write "for" and press twice on tab.
+
+foreach loop
+
+Difference Between foreach VS Other loop is (foreach tab work krega jab hamare pass collection of Data hoga[ek he fark hai])
+
+Var And Dynamic_Keyword
+
+var, compile time me batadeta konsa data type hai
+
+ var age = 10; (value declare karrna padta aur ek data type declare kre tu dobara usi data type ko declare kar ni skte)
+Ex: jaisa opper age ko hum dosra data type ni de skte.
+
+NOTE: Var Keyword mathod k parameter me use ni kar skte jaise k (static void main(var name))not possible.
+ 
+
+ Dynamic_keyword
+
+Dynamic Keywoerd Runtime me check karta hai konsa data type hai,
+Dynamic Keyword compile time me nahe batata konsa data type hai.
+
+ dynamic age; (value declare kar b skte aur ni b kar sakte Aur ek data type int age assign kre tu,dosra string age declare kar skte)
+
+dynamic keyword parameter k mathod me use kar skte.
+
+
+static void mathod() se static void mathod() ko  call kre tu object banane ki zarorat ni hoti.
+
+static void mathod() se void Display() hai tu class i.e (program or class name) ka object bana k call karna padta.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Duplicate Detection by Self
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+//CRM SDK Namespace
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Crm.Sdk.Messages;
+
+namespace Sample
+{
+    public class Duplicate_Detection : IPlugin
+    {
+        public void Execute(IServiceProvider serviceProvider)
+        {
+            IPluginExecutionContext context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
+            IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
+            IOrganizationService service = (IOrganizationService)serviceFactory.CreateOrganizationService(context.UserId);
+            ITracingService tracingService = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+
+            if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
+            {
+                Entity entity = (Entity)context.InputParameters["Target"];
+                var Contacts = entity.GetAttributeValue<string>("new_contacts");
+
+                #region  Retrieve All Account Record
+
+                QueryExpression Account = new QueryExpression { EntityName = entity.LogicalName, ColumnSet = new ColumnSet("new_contacts") };
+                Account.Criteria.AddCondition("new_contacts", ConditionOperator.Equal, Contacts);
+                Account.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
+
+                EntityCollection RetrieveContacts = service.RetrieveMultiple(Account);
+
+                //If the retrieved Account Count Greater Than 1 , following Error Message Throw
+
+                if (RetrieveContacts.Entities.Count > 0)
+                {
+                    throw new InvalidPluginExecutionException("The given Phone Number Is Already Exists,Please Add Another Number");
+
+                }
+                else if (RetrieveContacts.Entities.Count == 0)
+                {
+                    return;
+                }
+                #endregion
+            }
+        }
+    }
+}
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Crm.Sdk.Messages;
+using System.Net;
+using System.ServiceModel.Description;
+using Microsoft.Xrm.Sdk.Messages;
+
+namespace ConsoleConnectToCrm
+{
+    class Program
+    {
+      
+        static IOrganizationService _service;
+
+        static void Main(string[] args)
+        {
+            IOrganizationService organizationService = null;
+
+          
+            try
+            {
+                Entity en = new Entity("account");
+                en["name"] = "Ms Crm";
+
+                
+
+                ClientCredentials clientCredentials = new ClientCredentials();
+                clientCredentials.UserName.UserName = "adnanpatel@crmhvac.onmicrosoft.com";
+                clientCredentials.UserName.Password = "Sayazhar757";  
+                
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                
+                organizationService = (IOrganizationService)new OrganizationServiceProxy(new Uri("https://crmhvac.api.crm8.dynamics.com/XRMServices/2011/Organization.svc"),
+                 null, clientCredentials, null);
+
+                
+                _service.Create(en);
+
+                Console.WriteLine("Account Created");
+                Console.ReadLine();
+
+
+
+
+
+
+                if (organizationService != null)
+                {
+                    Guid userid = ((WhoAmIResponse)organizationService.Execute(new WhoAmIRequest())).UserId;
+
+                    if (userid != Guid.Empty)
+                    {
+                        Console.WriteLine("Connection Established Successfully...");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Failed to Established Connection!!!");
+
+                    //_service.Create(entity);
+                }
+
+            }
+                  
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception caught - " + ex.Message);
+            }
+            Console.ReadKey();
+            //Step 8: Right click on the solution and build it. If build is succeeded, Run the application to see the below Message.
+
+
+        }
+    }
+}
+
+1 rollup field
+
+N simple currency data type
+
+Context contains the entity business information which is being updated currently on CRM Platform.
+
+In Plugin,
+
+IPluginExecutionContext contains information that describes the run-time environment that the plug-in executes, information related to the execution pipeline, and entity business information.
+
+When a system event is fired that a plug-in is registered for, the system creates and populates the context and passes it to a plug-in through the previously mentioned classes and methods. The execution context is passed to each registered plug-in in the pipeline when they are executed.
+
+Context Example - 
+
+Let say. I have a plugin registered on Update of Contact Entity, If I update only Firstname and Lastname of contact record then plugin code can get only Firstname and Lastname field's value from the Plugin Context along with the information related to the execution pipeline.
+
+But If I want to get the other field's value like emailaddress and account name from plugin context, we will not be able to get the same and will get the error 'The given key was not present in the dictionary' error.
+
+To get these values, either we will have to perform retrieve query or can achieve it through pre-images.
+
+So Images are the best ways to get the copy of data (from whatever fields you want) before and after changes made to the database or changes committed to the database. While from context we can get the updated field's values only
+
+
+
+
